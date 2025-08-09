@@ -14,6 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { ModeToggle } from '@/components/mode-toggle'
 import { Home, LogIn, Users } from 'lucide-react'
 
 export const Route = createRootRoute({
@@ -69,8 +70,8 @@ export const Route = createRootRoute({
       </Sidebar>
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <div className="h-4 w-px bg-sidebar-border" />
+          <SidebarTrigger />
+          <ModeToggle />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           <Outlet />
