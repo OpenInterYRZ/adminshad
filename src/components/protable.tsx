@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
-import { type ColumnDef, type ColumnFiltersState, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
+import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useQuery } from '@tanstack/react-query'
 
 // 定义用户数据类型
 export interface UserData {
@@ -57,17 +56,25 @@ const mockData: any[] = [
 ]
 
 export function ProTable<T extends Record<string, any>>({ columns, loading = false, onSearch, onReset, searchItems }: ProTableProps<T>) {
-  const [searchValues, setSearchValues] = useState({})
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-manage', searchValues], // 添加 searchValues 作为依赖
-    queryFn: () => {
-      console.log('useQuery 正在执行，参数：', searchValues)
-      return onSearch(searchValues)
-    },
-    enabled: !!onSearch, // 只有当 onSearch 函数存在时才启用
-  })
+  const [searchValues, setSearchValues] = useState<Record<string, string>>({})
 
-  // 将ProTable列配置转换为TanStack Table列配置
+  // const { data, isLoading, refetch } = useQuery({
+  //   queryKey: ['user-manage'],
+  //   queryFn: () => onSearch(searchValues),
+  //   enabled: !!onSearch,
+  // })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = e.target
+    console.log('name', name)
+    console.log('value', value)
+    setSearchValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+    console.log('searchValues', searchValues)
+  }
+
   const tableColumns: ColumnDef<T>[] = useMemo(() => {
     return columns.map((col) => ({
       id: col.key as string,
@@ -77,9 +84,7 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
         const value = getValue()
         const record = row.original
         const index = row.index
-        // console.log('value', value)
-        // console.log('record', record)
-        // console.log('index', index)
+
         if (col.render) {
           return col.render(value, record, index)
         }
@@ -91,18 +96,18 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
   }, [columns])
 
   const table = useReactTable({
-    data: data || [],
+    data: mockData || [],
     columns: tableColumns,
 
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   })
 
-  // 处理重置
   const handleReset = () => {
     console.log('handleReset')
     console.log(searchValues)
-    refetch()
+    setSearchValues({})
+    // refetch()
     if (onReset) {
       onReset()
     }
@@ -110,25 +115,25 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
 
   return (
     <div className="space-y-4">
-      {/* 筛选区域 */}
       <div className="flex items-center space-x-2">
         {searchItems?.input?.map((item) => (
-          <>
+          <div key={item.apiName} className="flex items-center space-x-2">
             <span>{item.title}</span>
-            <input
-              key={item.apiName}
-              onChange={(event) => setSearchValues({ ...searchValues, [item.apiName]: event.target.value })}
+            <Input
+              name={item.apiName}
+              value={searchValues[item.apiName] || ''}
+              placeholder={`请输入${item.title}`}
               className="w-60"
+              onChange={handleInputChange}
             />
-          </>
+          </div>
         ))}
-        <Button onClick={() => refetch()}>查询</Button>
+        <Button onClick={() => onSearch(searchValues)}>查询</Button>
         <Button variant="outline" onClick={handleReset}>
           重置
         </Button>
       </div>
 
-      {/* 表格区域 */}
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

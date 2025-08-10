@@ -104,14 +104,14 @@ type CreditChangeResponse = {
 
 /**GET /user/info */
 export async function getUserInfo(params: UserInfoRequest) {
-  return request.get<UserInfoResponse>('/user/info', {
+  return request.get<UserInfoResponse>('user/info', {
     searchParams: { ...params },
   })
 }
 
 /** 获取用户充值历史 GET /user/{userId}/recharge-records */
 export async function getCreditHistory(userId: string, params: CreditHistoryRequest) {
-  return request.get<CreditHistoryResponse>(`/user/${userId}/recharge-records`, {
+  return request.get<CreditHistoryResponse>(`user/${userId}/recharge-records`, {
     searchParams: {
       ...params,
     },
@@ -120,7 +120,7 @@ export async function getCreditHistory(userId: string, params: CreditHistoryRequ
 
 /** 获取用户积分变动记录 GET /user/{userId}/credit-records */
 export async function getCreditChangeRecords(userId: string, params: CreditChangeRequest) {
-  return request.get<CreditChangeResponse>(`/user/${userId}/credit-records`, {
+  return request.get<CreditChangeResponse>(`user/${userId}/credit-records`, {
     searchParams: {
       ...params,
     },
@@ -135,7 +135,7 @@ export async function exportCreditHistory(
     endTime?: string
   }
 ) {
-  return request.get(`/user/${userId}/recharge-records/export`, {
+  return request.get(`user/${userId}/recharge-records/export`, {
     searchParams: {
       ...params,
     },

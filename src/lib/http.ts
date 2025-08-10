@@ -19,7 +19,7 @@ export const instance = ky.create({
     beforeRequest: [
       async (request) => {
         if (!request.headers.has('Authorization')) {
-          console.log('1')
+          console.log('!request.headers.hasAuthorizatio')
         }
       },
     ],
