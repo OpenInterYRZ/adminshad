@@ -3,7 +3,8 @@ import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useRe
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Calendar } from 'lucide-react'
+import Calendar23 from './calendar-23'
+import { type DateRange } from 'react-day-picker'
 
 // 定义用户数据类型
 export interface UserData {
@@ -58,12 +59,21 @@ const mockData: any[] = [
 
 export function ProTable<T extends Record<string, any>>({ columns, loading = false, onSearch, onReset, searchItems }: ProTableProps<T>) {
   const [searchValues, setSearchValues] = useState<Record<string, string>>({})
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   // const { data, isLoading, refetch } = useQuery({
   //   queryKey: ['user-manage'],
   //   queryFn: () => onSearch(searchValues),
   //   enabled: !!onSearch,
   // })
+
+  const formatDateToString = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    console.log(`${year}-${month}-${day}`)
+    return `${year}-${month}-${day}`
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target
@@ -74,6 +84,28 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
       [name]: value,
     }))
     console.log('searchValues', searchValues)
+  }
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range)
+    if (range?.from && range?.to) {
+      const startDate = formatDateToString(range.from)
+      const endDate = formatDateToString(range.to)
+      console.log('startDate', startDate)
+      console.log('endDate', endDate)
+      setSearchValues((prev) => ({
+        ...prev,
+        startDate,
+        endDate,
+      }))
+      console.log('searchValues', searchValues)
+    } else {
+      setSearchValues((prev) => ({
+        ...prev,
+        startDate: '',
+        endDate: '',
+      }))
+    }
   }
 
   const tableColumns: ColumnDef<T>[] = useMemo(() => {
@@ -108,6 +140,7 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
     console.log('handleReset')
     console.log(searchValues)
     setSearchValues({})
+    setDateRange(undefined)
     // refetch()
     if (onReset) {
       onReset()
@@ -129,7 +162,7 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
             />
           </div>
         ))}
-        {searchItems?.calendar && <Calendar />}
+        {searchItems?.calendar && <Calendar23 dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />}
       </div>
       <Button onClick={() => onSearch(searchValues)}>查询</Button>
       <Button variant="outline" onClick={handleReset}>
