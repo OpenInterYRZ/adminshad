@@ -3,6 +3,7 @@ import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useRe
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Calendar } from 'lucide-react'
 
 // 定义用户数据类型
 export interface UserData {
@@ -128,12 +129,12 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
             />
           </div>
         ))}
-        <Button onClick={() => onSearch(searchValues)}>查询</Button>
-        <Button variant="outline" onClick={handleReset}>
-          重置
-        </Button>
+        {searchItems?.calendar && <Calendar />}
       </div>
-
+      <Button onClick={() => onSearch(searchValues)}>查询</Button>
+      <Button variant="outline" onClick={handleReset}>
+        重置
+      </Button>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

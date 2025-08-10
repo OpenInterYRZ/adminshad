@@ -75,7 +75,18 @@ function UserManage() {
           <h1 className="text-3xl font-bold">用户管理</h1>
         </div>
 
-        <ProTable columns={columns} onSearch={getUserInfo} onReset={handleReset} searchItems={{ input: [{ title: '名字', apiName: 'name' }] }} />
+        <ProTable
+          columns={columns}
+          onSearch={getUserInfo}
+          onReset={handleReset}
+          searchItems={{
+            input: [
+              { title: '名字', apiName: 'name' },
+              { title: '邮箱', apiName: 'email' },
+            ],
+            calendar: true,
+          }}
+        />
       </div>
     </div>
   )
