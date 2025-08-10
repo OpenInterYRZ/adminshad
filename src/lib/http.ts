@@ -12,6 +12,7 @@ interface requestOptions extends Omit<Options, 'method'> {
 
 export const instance = ky.create({
   prefixUrl: import.meta.env.VITE_API_BASE_URL || '',
+
   timeout: 600000,
   retry: 0,
   hooks: {
@@ -42,6 +43,7 @@ function createRequestMethod(method: 'get' | 'post' | 'put' | 'delete'): {
 function createRequestMethod(method: 'get' | 'post' | 'put' | 'delete') {
   return async <T>(url: Input, options?: requestOptions) => {
     const { raw = false, ...kyOptions } = options || {}
+
     if (raw) return instance[method]<T>(url, kyOptions)
 
     const response = await instance[method](url, kyOptions)

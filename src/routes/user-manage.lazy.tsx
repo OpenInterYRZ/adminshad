@@ -1,13 +1,16 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProTable, type ProTableColumn, type UserData, mockUserData, type FilterConfig } from '@/components/protable'
+import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
+import { ProTable, type ProTableColumn, type UserData } from '@/components/protable'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+
+import { getUserInfo } from '@/api/user-manage'
 
 export const Route = createLazyFileRoute('/user-manage')({
   component: UserManage,
 })
 
 function UserManage() {
+  const router = useRouter()
+
   const columns: ProTableColumn<UserData>[] = [
     {
       key: 'name',
@@ -28,15 +31,6 @@ function UserManage() {
       key: 'status',
       title: '状态',
       dataIndex: 'status',
-      render: (value: UserData['status']) => {
-        const statusConfig = {
-          active: { label: '活跃', variant: 'success' as const },
-          inactive: { label: '非活跃', variant: 'secondary' as const },
-          pending: { label: '待审核', variant: 'warning' as const },
-        }
-        const config = statusConfig[value]
-        return <Badge variant={config.variant}>{config.label}</Badge>
-      },
     },
     {
       key: 'createdAt',
@@ -48,31 +42,30 @@ function UserManage() {
       title: '操作',
       render: (_, record: UserData) => (
         <div className="flex space-x-2">
-          <Button size="sm" variant="outline" onClick={() => handleEdit(record)}>
-            编辑
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              router.navigate({
+                to: '/sub-history/$id',
+                params: {
+                  id: record.userId,
+                },
+              })
+            }}
+          >
+            充值历史
           </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(record)}>
-            删除
+          <Button size="sm" variant="destructive" onClick={() => console.log('This is record', record)}>
+            积分历史
           </Button>
         </div>
       ),
     },
   ]
 
-  const handleSearch = (filters: FilterConfig) => {
-    console.log('搜索条件:', filters)
-  }
-
   const handleReset = () => {
     console.log('重置筛选条件')
-  }
-
-  const handleEdit = (record: UserData) => {
-    console.log('编辑用户:', record)
-  }
-
-  const handleDelete = (record: UserData) => {
-    console.log('删除用户:', record)
   }
 
   return (
@@ -80,10 +73,9 @@ function UserManage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">用户管理</h1>
-          <p className="text-muted-foreground">管理系统用户信息</p>
         </div>
 
-        <ProTable columns={columns} dataSource={mockUserData} onSearch={handleSearch} onReset={handleReset} searchItems={{ input: ['name'] }} />
+        <ProTable columns={columns} onSearch={getUserInfo} onReset={handleReset} searchItems={{ input: [{ title: '名字', apiName: 'name' }] }} />
       </div>
     </div>
   )

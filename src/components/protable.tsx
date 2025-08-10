@@ -1,15 +1,13 @@
-'use client'
-
-import * as React from 'react'
+import { useMemo, useState } from 'react'
 import { type ColumnDef, type ColumnFiltersState, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { SearchIcon } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
 // 定义用户数据类型
 export interface UserData {
-  id: string
+  userId: string
   name: string
   email: string
   role: string
@@ -35,68 +33,42 @@ export interface FilterConfig {
 export interface ProTableProps<T> {
   columns: ProTableColumn<T>[]
   searchItems?: {
-    input?: string[]
+    input?: { title: string; apiName: string }[]
     calendar?: boolean
     select?: {
       options: { label: string; value: string }[]
     }
   }
-  dataSource: T[]
+
   loading?: boolean
-  onSearch?: (filters: FilterConfig) => void
-  onReset?: () => void
+  onSearch?: any
+  onReset?: any
 }
 
-// Mock数据
-export const mockUserData: UserData[] = [
+const mockData: any[] = [
   {
-    id: '1',
+    userId: '1',
     name: '张三',
     email: 'zhangsan@example.com',
     role: '管理员',
     status: 'active',
     createdAt: '2024-01-15',
   },
-  {
-    id: '2',
-    name: '李四',
-    email: 'lisi@example.com',
-    role: '用户',
-    status: 'active',
-    createdAt: '2024-01-20',
-  },
-  {
-    id: '3',
-    name: '王五',
-    email: 'wangwu@example.com',
-    role: '编辑',
-    status: 'inactive',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: '4',
-    name: '赵六',
-    email: 'zhaoliu@example.com',
-    role: '用户',
-    status: 'pending',
-    createdAt: '2024-02-10',
-  },
-  {
-    id: '5',
-    name: '钱七',
-    email: 'qianqi@example.com',
-    role: '管理员',
-    status: 'active',
-    createdAt: '2024-02-15',
-  },
 ]
 
-export function ProTable<T extends Record<string, any>>({ columns, dataSource, loading = false, onSearch, onReset, searchItems }: ProTableProps<T>) {
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [searchValues, setSearchValues] = React.useState({})
+export function ProTable<T extends Record<string, any>>({ columns, loading = false, onSearch, onReset, searchItems }: ProTableProps<T>) {
+  const [searchValues, setSearchValues] = useState({})
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['user-manage', searchValues], // 添加 searchValues 作为依赖
+    queryFn: () => {
+      console.log('useQuery 正在执行，参数：', searchValues)
+      return onSearch(searchValues)
+    },
+    enabled: !!onSearch, // 只有当 onSearch 函数存在时才启用
+  })
 
   // 将ProTable列配置转换为TanStack Table列配置
-  const tableColumns: ColumnDef<T>[] = React.useMemo(() => {
+  const tableColumns: ColumnDef<T>[] = useMemo(() => {
     return columns.map((col) => ({
       id: col.key as string,
       accessorKey: col.dataIndex || col.key,
@@ -105,7 +77,9 @@ export function ProTable<T extends Record<string, any>>({ columns, dataSource, l
         const value = getValue()
         const record = row.original
         const index = row.index
-
+        // console.log('value', value)
+        // console.log('record', record)
+        // console.log('index', index)
         if (col.render) {
           return col.render(value, record, index)
         }
@@ -117,29 +91,18 @@ export function ProTable<T extends Record<string, any>>({ columns, dataSource, l
   }, [columns])
 
   const table = useReactTable({
-    data: dataSource,
+    data: data || [],
     columns: tableColumns,
-    onColumnFiltersChange: setColumnFilters,
+
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      columnFilters,
-    },
   })
-
-  // 处理搜索
-  const handleSearch = () => {
-    // 调用外部搜索回调
-    if (onSearch) {
-      onSearch(searchValues)
-    }
-  }
 
   // 处理重置
   const handleReset = () => {
-    setSearchValues({})
-    setColumnFilters([])
-
+    console.log('handleReset')
+    console.log(searchValues)
+    refetch()
     if (onReset) {
       onReset()
     }
@@ -151,11 +114,15 @@ export function ProTable<T extends Record<string, any>>({ columns, dataSource, l
       <div className="flex items-center space-x-2">
         {searchItems?.input?.map((item) => (
           <>
-            <span>{item}</span>
-            <Input key={item} onChange={(event) => setSearchValues({ ...searchValues, [item]: event.target.value })} className="w-60" />
+            <span>{item.title}</span>
+            <input
+              key={item.apiName}
+              onChange={(event) => setSearchValues({ ...searchValues, [item.apiName]: event.target.value })}
+              className="w-60"
+            />
           </>
         ))}
-        <Button onClick={handleSearch}>查询</Button>
+        <Button onClick={() => refetch()}>查询</Button>
         <Button variant="outline" onClick={handleReset}>
           重置
         </Button>
