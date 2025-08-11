@@ -2,7 +2,7 @@ import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { ProTable, type ProTableColumn, type UserData } from '@/components/protable'
 import { Button } from '@/components/ui/button'
 
-import { getUserInfo } from '@/api/user-manage'
+import { getUserInfo, exportCreditHistory } from '@/api/user-manage'
 
 export const Route = createLazyFileRoute('/user-manage')({
   component: UserManage,
@@ -56,7 +56,18 @@ function UserManage() {
           >
             充值历史
           </Button>
-          <Button size="sm" variant="destructive" onClick={() => console.log('This is record', record)}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              router.navigate({
+                to: '/credit-history/$id',
+                params: {
+                  id: record.userId,
+                },
+              })
+            }}
+          >
             积分历史
           </Button>
         </div>
@@ -64,21 +75,16 @@ function UserManage() {
     },
   ]
 
-  const handleReset = () => {
-    console.log('重置筛选条件')
-  }
-
   return (
     <div className="container mx-auto py-6">
       <div className="space-y-6">
-        <div>
+        <div className="mb-8">
           <h1 className="text-3xl font-bold">用户管理</h1>
         </div>
 
         <ProTable
           columns={columns}
           onSearch={getUserInfo}
-          onReset={handleReset}
           searchItems={{
             input: [
               { title: '名字', apiName: 'name' },

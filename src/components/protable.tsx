@@ -1,19 +1,12 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
+
 import Calendar23 from './calendar-23'
 import { type DateRange } from 'react-day-picker'
+import { Pgeli } from './elipg'
 
 // 定义用户数据类型
 export interface UserData {
@@ -25,7 +18,6 @@ export interface UserData {
   createdAt: string
 }
 
-// 定义分页数据接口
 export interface PaginationData<T> {
   current: string
   pages: string
@@ -34,7 +26,6 @@ export interface PaginationData<T> {
   total: string
 }
 
-// 定义表格配置接口
 export interface ProTableColumn<T> {
   key: keyof T | string
   title: string
@@ -43,12 +34,10 @@ export interface ProTableColumn<T> {
   width?: number
 }
 
-// 定义筛选配置
 export interface FilterConfig {
   name?: string
 }
 
-// ProTable组件属性
 export interface ProTableProps<T> {
   columns: ProTableColumn<T>[]
   searchItems?: {
@@ -59,13 +48,17 @@ export interface ProTableProps<T> {
     }
   }
   loading?: boolean
-  onSearch?: (params: any) => Promise<PaginationData<T>>
-  onReset?: any
+  onSearch?: any
+  params?: any
+  buttons?: {
+    title: string
+    onClick: any
+  }[]
 }
 
 const mockData: any[] = [
   {
-    userId: '1',
+    userId: '585282961264480256',
     name: '张三',
     email: 'zhangsan@example.com',
     role: '管理员',
@@ -100,21 +93,21 @@ const mockData: any[] = [
 
 const mockPaginationData: PaginationData<any> = {
   current: '1',
-  pages: '10',
+  pages: '100',
   records: mockData,
   size: '25',
   total: '100',
 }
 
-export function ProTable<T extends Record<string, any>>({ columns, loading = false, onSearch, onReset, searchItems }: ProTableProps<T>) {
-  const [searchValues, setSearchValues] = useState<Record<string, any>>({ page: 1, size: 25 })
+export function ProTable<T extends Record<string, any>>({ columns, loading = false, onSearch, searchItems, buttons, params = {} }: ProTableProps<T>) {
+  const [searchValues, setSearchValues] = useState<Record<string, any>>({ page: 1, size: 25, ...params })
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [pgData, setPgData] = useState<PaginationData<T> | null>(mockPaginationData)
 
-  // 初始加载数据
-  React.useEffect(() => {
+  useEffect(() => {
     if (onSearch) {
-      onSearch(searchValues).then((result) => {
+      console.log('searchValues', searchValues)
+      onSearch(searchValues).then((result: any) => {
         setPgData(result)
       })
     }
@@ -136,31 +129,28 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target
-    console.log('name', name)
-    console.log('value', value)
     setSearchValues((prev) => ({
       ...prev,
       [name]: value,
     }))
-    console.log('searchValues', searchValues)
   }
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
     if (range?.from && range?.to) {
-      const startDate = formatDateToString(range.from)
-      const endDate = formatDateToString(range.to)
+      const startTime = formatDateToString(range.from)
+      const endTime = formatDateToString(range.to)
 
       setSearchValues((prev) => ({
         ...prev,
-        startDate,
-        endDate,
+        startTime,
+        endTime,
       }))
     } else {
       setSearchValues((prev) => ({
         ...prev,
-        startDate: '',
-        endDate: '',
+        startTime: '',
+        endTime: '',
       }))
     }
   }
@@ -194,7 +184,7 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
   })
 
   const handleReset = async () => {
-    const resetValues = { page: 1, size: 25 }
+    const resetValues = { page: 1, size: 25, ...params }
     setSearchValues(resetValues)
     setDateRange(undefined)
 
@@ -202,13 +192,8 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
       const result = await onSearch(resetValues)
       setPgData(result)
     }
-
-    if (onReset) {
-      onReset()
-    }
   }
 
-  // 分页处理函数
   const handlePageChange = async (page: number) => {
     const newSearchValues = { ...searchValues, page }
     setSearchValues(newSearchValues)
@@ -235,7 +220,7 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-4 mb-8 md:flex-row flex-col">
         {searchItems?.input?.map((item) => (
           <div key={item.apiName} className="flex items-center space-x-2">
             <span>{item.title}</span>
@@ -248,21 +233,41 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
             />
           </div>
         ))}
-        {searchItems?.calendar && <Calendar23 dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />}
+        <div className="flex-start">{searchItems?.calendar && <Calendar23 dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />} </div>
+        <div className="flex gap-4">
+          <Button
+            onClick={async () => {
+              if (onSearch) {
+                const result = await onSearch(searchValues)
+                setPgData(result)
+              }
+            }}
+          >
+            查询
+          </Button>
+          <Button variant="outline" onClick={handleReset}>
+            重置
+          </Button>
+        </div>
       </div>
-      <Button
-        onClick={async () => {
-          if (onSearch) {
-            const result = await onSearch(searchValues)
-            setPgData(result)
-          }
-        }}
-      >
-        查询
-      </Button>
-      <Button variant="outline" onClick={handleReset}>
-        重置
-      </Button>
+
+      <div className="flex items-center gap-2 justify-start">
+        {buttons &&
+          buttons.map((item) => (
+            <Button
+              key={item.title}
+              onClick={() => {
+                console.log('searchValues', searchValues)
+                const { page, size, ...rest } = searchValues
+                console.log('rest', rest)
+                item.onClick({ ...rest })
+              }}
+            >
+              {item.title}
+            </Button>
+          ))}
+      </div>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -298,104 +303,8 @@ export function ProTable<T extends Record<string, any>>({ columns, loading = fal
         </Table>
       </div>
 
-      {/* 分页组件 */}
       {pgData && (
-        <div className="flex justify-center ">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={handlePreviousPage}
-                  className={Number(pgData.current) <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-
-              {/* 页码 */}
-              {(() => {
-                const current = Number(pgData.current)
-                const total = Number(pgData.pages)
-                const pages = []
-
-                if (total <= 7) {
-                  // 总页数不超过7页，显示所有页码
-                  for (let i = 1; i <= total; i++) {
-                    pages.push(
-                      <PaginationItem key={i}>
-                        <PaginationLink onClick={() => handlePageChange(i)} isActive={i === current} className="cursor-pointer">
-                          {i}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  }
-                } else {
-                  // 总页数超过7页，使用省略号
-                  // 始终显示第一页
-                  pages.push(
-                    <PaginationItem key={1}>
-                      <PaginationLink onClick={() => handlePageChange(1)} isActive={1 === current} className="cursor-pointer">
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-
-                  if (current > 3) {
-                    // 如果当前页距离第一页较远，显示省略号
-                    pages.push(
-                      <PaginationItem key="ellipsis-start">
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )
-                  }
-
-                  // 显示当前页前后的页码
-                  const start = Math.max(2, current - 1)
-                  const end = Math.min(total - 1, current + 1)
-
-                  for (let i = start; i <= end; i++) {
-                    if (i !== 1 && i !== total) {
-                      pages.push(
-                        <PaginationItem key={i}>
-                          <PaginationLink onClick={() => handlePageChange(i)} isActive={i === current} className="cursor-pointer">
-                            {i}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    }
-                  }
-
-                  if (current < total - 2) {
-                    // 如果当前页距离最后一页较远，显示省略号
-                    pages.push(
-                      <PaginationItem key="ellipsis-end">
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )
-                  }
-
-                  // 始终显示最后一页
-                  if (total > 1) {
-                    pages.push(
-                      <PaginationItem key={total}>
-                        <PaginationLink onClick={() => handlePageChange(total)} isActive={total === current} className="cursor-pointer">
-                          {total}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  }
-                }
-
-                return pages
-              })()}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={handleNextPage}
-                  className={Number(pgData.current) >= Number(pgData.pages) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+        <Pgeli pgData={pgData} handlePreviousPage={handlePreviousPage} handleNextPage={handleNextPage} handlePageChange={handlePageChange} />
       )}
     </div>
   )

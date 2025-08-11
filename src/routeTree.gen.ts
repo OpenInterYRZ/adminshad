@@ -12,7 +12,9 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubHistoryIndexRouteImport } from './routes/sub-history/index'
+import { Route as CreditHistoryIndexRouteImport } from './routes/credit-history/index'
 import { Route as SubHistoryIdRouteImport } from './routes/sub-history/$id'
+import { Route as CreditHistoryIdRouteImport } from './routes/credit-history/$id'
 
 const UserManageLazyRouteImport = createFileRoute('/user-manage')()
 const LoginLazyRouteImport = createFileRoute('/login')()
@@ -38,9 +40,19 @@ const SubHistoryIndexRoute = SubHistoryIndexRouteImport.update({
   path: '/sub-history/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreditHistoryIndexRoute = CreditHistoryIndexRouteImport.update({
+  id: '/credit-history/',
+  path: '/credit-history/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubHistoryIdRoute = SubHistoryIdRouteImport.update({
   id: '/sub-history/$id',
   path: '/sub-history/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditHistoryIdRoute = CreditHistoryIdRouteImport.update({
+  id: '/credit-history/$id',
+  path: '/credit-history/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -48,14 +60,18 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/login': typeof LoginLazyRoute
   '/user-manage': typeof UserManageLazyRoute
+  '/credit-history/$id': typeof CreditHistoryIdRoute
   '/sub-history/$id': typeof SubHistoryIdRoute
+  '/credit-history': typeof CreditHistoryIndexRoute
   '/sub-history': typeof SubHistoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/login': typeof LoginLazyRoute
   '/user-manage': typeof UserManageLazyRoute
+  '/credit-history/$id': typeof CreditHistoryIdRoute
   '/sub-history/$id': typeof SubHistoryIdRoute
+  '/credit-history': typeof CreditHistoryIndexRoute
   '/sub-history': typeof SubHistoryIndexRoute
 }
 export interface FileRoutesById {
@@ -63,7 +79,9 @@ export interface FileRoutesById {
   '/': typeof IndexLazyRoute
   '/login': typeof LoginLazyRoute
   '/user-manage': typeof UserManageLazyRoute
+  '/credit-history/$id': typeof CreditHistoryIdRoute
   '/sub-history/$id': typeof SubHistoryIdRoute
+  '/credit-history/': typeof CreditHistoryIndexRoute
   '/sub-history/': typeof SubHistoryIndexRoute
 }
 export interface FileRouteTypes {
@@ -72,16 +90,27 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/user-manage'
+    | '/credit-history/$id'
     | '/sub-history/$id'
+    | '/credit-history'
     | '/sub-history'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/user-manage' | '/sub-history/$id' | '/sub-history'
+  to:
+    | '/'
+    | '/login'
+    | '/user-manage'
+    | '/credit-history/$id'
+    | '/sub-history/$id'
+    | '/credit-history'
+    | '/sub-history'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/user-manage'
+    | '/credit-history/$id'
     | '/sub-history/$id'
+    | '/credit-history/'
     | '/sub-history/'
   fileRoutesById: FileRoutesById
 }
@@ -89,7 +118,9 @@ export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   LoginLazyRoute: typeof LoginLazyRoute
   UserManageLazyRoute: typeof UserManageLazyRoute
+  CreditHistoryIdRoute: typeof CreditHistoryIdRoute
   SubHistoryIdRoute: typeof SubHistoryIdRoute
+  CreditHistoryIndexRoute: typeof CreditHistoryIndexRoute
   SubHistoryIndexRoute: typeof SubHistoryIndexRoute
 }
 
@@ -123,11 +154,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubHistoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/credit-history/': {
+      id: '/credit-history/'
+      path: '/credit-history'
+      fullPath: '/credit-history'
+      preLoaderRoute: typeof CreditHistoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sub-history/$id': {
       id: '/sub-history/$id'
       path: '/sub-history/$id'
       fullPath: '/sub-history/$id'
       preLoaderRoute: typeof SubHistoryIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credit-history/$id': {
+      id: '/credit-history/$id'
+      path: '/credit-history/$id'
+      fullPath: '/credit-history/$id'
+      preLoaderRoute: typeof CreditHistoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -137,7 +182,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   LoginLazyRoute: LoginLazyRoute,
   UserManageLazyRoute: UserManageLazyRoute,
+  CreditHistoryIdRoute: CreditHistoryIdRoute,
   SubHistoryIdRoute: SubHistoryIdRoute,
+  CreditHistoryIndexRoute: CreditHistoryIndexRoute,
   SubHistoryIndexRoute: SubHistoryIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -38,6 +38,7 @@ type CreditHistoryRequest = {
   page?: number
   size?: number
   startTime?: string
+  userId?: string
 }
 
 type CreditRecord = {
@@ -74,6 +75,7 @@ type CreditChangeRequest = {
   page?: number
   size?: number
   startTime?: string
+  userId?: string
 }
 
 type CreditChangeRecord = {
@@ -110,8 +112,8 @@ export async function getUserInfo(params: UserInfoRequest) {
 }
 
 /** 获取用户充值历史 GET /user/{userId}/recharge-records */
-export async function getCreditHistory(userId: string, params: CreditHistoryRequest) {
-  return request.get<CreditHistoryResponse>(`user/${userId}/recharge-records`, {
+export async function getCreditHistory(params: CreditHistoryRequest) {
+  return request.get<CreditHistoryResponse>(`user/${params.userId}/recharge-records`, {
     searchParams: {
       ...params,
     },
@@ -119,8 +121,8 @@ export async function getCreditHistory(userId: string, params: CreditHistoryRequ
 }
 
 /** 获取用户积分变动记录 GET /user/{userId}/credit-records */
-export async function getCreditChangeRecords(userId: string, params: CreditChangeRequest) {
-  return request.get<CreditChangeResponse>(`user/${userId}/credit-records`, {
+export async function getCreditChangeRecords(params: CreditChangeRequest) {
+  return request.get<CreditChangeResponse>(`user/${params.userId}/credit-records`, {
     searchParams: {
       ...params,
     },
@@ -129,15 +131,36 @@ export async function getCreditChangeRecords(userId: string, params: CreditChang
 
 /** 导出用户充值历史Excel GET /user/{userId}/recharge-records/export */
 export async function exportCreditHistory(
-  userId: string,
   params: {
     startTime?: string
     endTime?: string
+    userId?: string,
   }
 ) {
-  return request.get(`user/${userId}/recharge-records/export`, {
+
+
+  const response = await request.get(`user/${params.userId}/recharge-records/export`, {
     searchParams: {
       ...params,
     },
+    raw: true
   })
+
+
+  const blob = await response.blob()
+
+
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `充值历史_${params.userId}_${new Date().getTime()}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+
+
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+
+  return { success: true }
+
 }
