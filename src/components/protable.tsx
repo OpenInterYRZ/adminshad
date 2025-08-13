@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react'
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
-import Calendar23 from './calendar-23'
 import { type DateRange } from 'react-day-picker'
 import { Pgeli } from './elipg'
 import { Loader2 } from 'lucide-react'
 import { useProTableSearch } from '@/hooks/useProTableSearch'
+import { useProTablePagination } from '@/hooks/useProTablePagination'
+import { ProTableSearch } from './ProTableSearch'
 
 export interface PaginationData<T> {
   current: string
@@ -21,33 +21,13 @@ export interface PaginationData<T> {
 export interface ProTableColumn<T> {
   key: string // 唯一标识
   title: string
-  dataIndex: keyof T | string // 数据索引
+  dataIndex?: keyof T | string
   render?: (value: any, record: T, index: number) => React.ReactNode
   width?: number | string
   align?: 'left' | 'center' | 'right'
   ellipsis?: boolean
   sortable?: boolean
   filterable?: boolean
-}
-
-// 搜索项
-export interface SearchInputItem {
-  title: string
-  field: string // 替代 apiName
-  placeholder?: string
-  type?: 'text' | 'number' | 'email'
-}
-
-export interface SearchSelectItem {
-  title: string
-  field: string
-  options: Array<{ label: string; value: string | number }>
-  placeholder?: string
-}
-export interface SearchDateRangeItem {
-  title?: string
-  startTime: string
-  endTime: string
 }
 
 export interface ProTableProps<T> {
@@ -86,6 +66,8 @@ export function ProTable<T extends Record<string, any>>({
     queryFn: () => onSearch(searchParams),
     enabled: !!onSearch,
   })
+
+  const { previousPage, nextPage, goToPage } = useProTablePagination(data, changePage)
   const formatDateToString = (date: Date): string => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -94,17 +76,18 @@ export function ProTable<T extends Record<string, any>>({
     return `${year}-${month}-${day}`
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = e.target
-    updateInput(name, value)
-    debouncedSearch(name, value)
-  }
-
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
     if (range?.from && range?.to) {
       const startTime = formatDateToString(range.from)
-      const endTime = formatDateToString(range.to)
+      let endTime = formatDateToString(range.to)
+
+      if (startTime === endTime) {
+        const nextDay = new Date(range.to)
+        nextDay.setDate(nextDay.getDate() + 1)
+        endTime = formatDateToString(nextDay)
+      }
+
       updateParam('startTime', startTime)
       updateParam('endTime', endTime)
     } else {
@@ -129,7 +112,7 @@ export function ProTable<T extends Record<string, any>>({
 
         return value
       },
-      size: col.width,
+      size: typeof col.width === 'number' ? col.width : undefined,
       // enableSorting: col.sorter !== false, // 如果有sorter配置
     }))
   }, [columns])
@@ -149,65 +132,24 @@ export function ProTable<T extends Record<string, any>>({
     refetch()
   }
 
-  const handlePageChange = async (page: number) => {
-    changePage(page)
-  }
-
-  const handlePreviousPage = () => {
-    const currentPage = Number(data?.current || 1)
-    if (currentPage > 1) {
-      changePage(currentPage - 1)
-    }
-  }
-
-  const handleNextPage = () => {
-    const currentPage = Number(data?.current || 1)
-    const totalPages = Number(data?.pages || 1)
-    if (currentPage < totalPages) {
-      changePage(currentPage + 1)
-    }
-  }
-
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-start">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-4 items-center">
-          {searchItems?.input?.map((item) => (
-            <div key={item.apiName} className="flex flex-col space-y-2">
-              <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
-              <Input
-                name={item.apiName}
-                value={inputValues[item.apiName] || ''}
-                placeholder={`请输入${item.title}`}
-                className="h-10"
-                onChange={handleInputChange}
-              />
-            </div>
-          ))}
-          {searchItems?.calendar && (
-            <div className="flex flex-col space-y-2">
-              <span className="text-sm font-medium text-muted-foreground">日期筛选</span>
-              <Calendar23 dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
-            </div>
-          )}
-        </div>
-        <div className="flex gap-3 items-start pt-7">
-          <Button
-            size="default"
-            className="min-w-[72px]"
-            onClick={async () => {
-              if (onSearch) {
-                refetch()
-              }
-            }}
-          >
-            查询
-          </Button>
-          <Button variant="outline" size="default" className="min-w-[72px]" onClick={handleReset}>
-            重置
-          </Button>
-        </div>
-      </div>
+      <ProTableSearch
+        searchItems={searchItems}
+        values={inputValues}
+        dateRange={dateRange}
+        onChange={(key, value) => {
+          updateInput(key, value)
+          debouncedSearch(key, value)
+        }}
+        onDateRangeChange={handleDateRangeChange}
+        onSearch={async () => {
+          if (onSearch) {
+            refetch()
+          }
+        }}
+        onReset={handleReset}
+      />
 
       {buttons && buttons.length > 0 && (
         <div className="flex items-center gap-3 pt-2 border-t border-border/40">
@@ -272,7 +214,7 @@ export function ProTable<T extends Record<string, any>>({
           </Table>
         </div>
       )}
-      {data && <Pgeli pgData={data} handlePreviousPage={handlePreviousPage} handleNextPage={handleNextPage} handlePageChange={handlePageChange} />}
+      {data && <Pgeli pgData={data} handlePreviousPage={previousPage} handleNextPage={nextPage} handlePageChange={goToPage} />}
     </div>
   )
 }

@@ -18,6 +18,7 @@ import {
 import { ModeToggle } from '@/components/mode-toggle'
 import { Home, LogOut, Users } from 'lucide-react'
 import Logo from '@/assets/logo.svg'
+import { UserMenu } from '@/components/user-menu'
 
 function RootComponent() {
   const location = useLocation()
@@ -85,27 +86,18 @@ function RootComponent() {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => {
-                  localStorage.removeItem('token')
-                  navigate({ to: '/login' })
-                }}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-              >
-                <LogOut />
-                <span>退出登录</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <div className="p-2 text-xs text-sidebar-foreground/70">© 2025 管理系统</div>
+          <div className="p-2 text-xs text-sidebar-foreground/70">© 2025 Memories.ai</div>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-          <ModeToggle />
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
+          <div>
+            <SidebarTrigger />
+          </div>
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <UserMenu />
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           <Outlet />

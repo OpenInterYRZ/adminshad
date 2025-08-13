@@ -49,7 +49,7 @@ function UserManage() {
               router.navigate({
                 to: '/sub-history/$id',
                 params: {
-                  id: record.userId,
+                  id: BigInt(record.userId).toString(),
                 },
               })
             }}
@@ -63,7 +63,7 @@ function UserManage() {
               router.navigate({
                 to: '/credit-history/$id',
                 params: {
-                  id: record.userId,
+                  id: BigInt(record.userId).toString(),
                 },
               })
             }}
@@ -87,14 +87,7 @@ function UserManage() {
           onSearch={getUserInfo}
           queryKey={['user-manage']}
           searchItems={{
-            input: [
-              { title: '名字/邮箱', apiName: 'keyword' },
-              { title: '名字/邮箱1', apiName: 'keyword1' },
-              { title: '名字/邮箱2', apiName: 'keyword2' },
-              { title: '名字/邮箱3', apiName: 'keyword3' },
-              { title: '名字/邮箱4', apiName: 'keyword4' },
-            ],
-            calendar: true,
+            input: [{ title: '名字/邮箱', apiName: 'keyword' }],
           }}
         />
       </div>

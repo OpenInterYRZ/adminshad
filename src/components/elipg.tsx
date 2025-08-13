@@ -33,7 +33,7 @@ export const Pgeli = ({
           {(() => {
             const current = Number(pgData.current)
             const total = Number(pgData.pages)
-            const pages = []
+            const pages: React.ReactNode[] = []
 
             if (total <= 8) {
               for (let i = 1; i <= total; i++) {

@@ -47,8 +47,8 @@ function RouteComponent() {
   const handleExport = async (searchParams: any) => {
     await exportCreditHistory({
       userId: id,
-      startTime: searchParams?.startTime,
-      endTime: searchParams?.endTime,
+      ...(searchParams?.startTime && { startTime: searchParams?.startTime }),
+      ...(searchParams?.endTime && { endTime: searchParams?.endTime }),
     })
   }
 
@@ -60,7 +60,7 @@ function RouteComponent() {
     <div className="container mx-auto py-6">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">充值历史</h1>
+          <h1 className="text-3xl font-bold">充值历史 -- 用户 {id}</h1>
         </div>
 
         <ProTable

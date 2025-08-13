@@ -13,7 +13,7 @@ type UserRecord = {
   name: string
   registerTime: string
   userType: string
-  userId: number
+  userId: bigint
 }
 
 type UserInfoData = {

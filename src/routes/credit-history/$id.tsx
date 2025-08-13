@@ -35,6 +35,11 @@ const columns: ProTableColumn<any>[] = [
     title: '兑换积分',
     dataIndex: 'changeAmount',
   },
+  {
+    key: 'changeSource',
+    title: '来源类型',
+    dataIndex: 'changeSource',
+  },
 ]
 
 function RouteComponent() {
@@ -44,12 +49,12 @@ function RouteComponent() {
   const handleExport = async (searchParams: any) => {
     await exportCreditRecords({
       userId: id,
-      startTime: searchParams?.startTime,
-      endTime: searchParams?.endTime,
+      ...(searchParams?.startTime && { startTime: searchParams?.startTime }),
+      ...(searchParams?.endTime && { endTime: searchParams?.endTime }),
     })
   }
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ['creditHistory', id],
     queryFn: () => getCreditChangeRecords({ userId: id, page: 1, size: 10 }),
   })

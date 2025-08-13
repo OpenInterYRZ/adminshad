@@ -39,6 +39,7 @@ function Login() {
       password: formData.password,
     })
     localStorage.setItem('token', response.token)
+    localStorage.setItem('username', formData.username)
     console.log('response', response)
     navigate({ to: '/', replace: true })
   }
@@ -56,7 +57,7 @@ function Login() {
               </div>
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">欢迎回来</h1>
+              <h1 className="text-3xl font-bold  text-slate-900 dark:text-slate-50">欢迎回来</h1>
             </div>
           </div>
 
@@ -82,7 +83,7 @@ function Login() {
                       onChange={handleInputChange}
                       required
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                      className="h-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 "
                     />
                   </div>
                   <div className="space-y-2">
@@ -90,7 +91,7 @@ function Login() {
                       <Label htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         密码
                       </Label>
-                      <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                      <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 ">
                         忘记密码？
                       </a>
                     </div>
@@ -103,7 +104,7 @@ function Login() {
                       onChange={handleInputChange}
                       required
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                      className="h-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 "
                     />
                   </div>
                 </div>

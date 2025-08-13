@@ -2,10 +2,9 @@ import { request } from '@/lib/http'
 
 
 type LoginResponse = {
-    code: string
-    data: {
-        token: string
-    }
+
+    token: string
+
 }
 
 /** 登录接口 GET /user/login */
