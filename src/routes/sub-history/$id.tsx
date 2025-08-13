@@ -19,14 +19,14 @@ const columns: ProTableColumn<any>[] = [
     dataIndex: 'email',
   },
   {
-    key: 'role',
+    key: 'userType',
     title: '订阅类型',
-    dataIndex: 'role',
+    dataIndex: 'userType',
   },
   {
-    key: 'status',
+    key: 'paymentType',
     title: '消费类型',
-    dataIndex: 'status',
+    dataIndex: 'paymentType',
   },
   {
     key: 'rechargeTime',
@@ -34,9 +34,9 @@ const columns: ProTableColumn<any>[] = [
     dataIndex: 'rechargeTime',
   },
   {
-    key: 'credit',
+    key: 'addCredit',
     title: '兑换积分',
-    dataIndex: 'credit',
+    dataIndex: 'addCredit',
   },
 ]
 
@@ -66,6 +66,7 @@ function RouteComponent() {
         <ProTable
           columns={columns}
           onSearch={getCreditHistory}
+          queryKey={['sub-history', id]}
           params={{ userId: id }}
           searchItems={{
             calendar: true,

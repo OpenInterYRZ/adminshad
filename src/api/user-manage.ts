@@ -113,23 +113,23 @@ export async function getUserInfo(params: UserInfoRequest) {
 
 /** 获取用户充值历史 GET /user/{userId}/recharge-records */
 export async function getCreditHistory(params: CreditHistoryRequest) {
-  return request.get<CreditHistoryResponse>(`user/${params.userId}/recharge-records`, {
+  return request.get<CreditHistoryResponse>(`payment/${params.userId}/recharge-records`, {
     searchParams: {
       ...params,
     },
   })
 }
 
-/** 获取用户积分变动记录 GET /user/{userId}/credit-records */
+/** 获取用户积分变动记录 GET /{userId}/credit-records */
 export async function getCreditChangeRecords(params: CreditChangeRequest) {
-  return request.get<CreditChangeResponse>(`user/${params.userId}/credit-records`, {
+  return request.get<CreditChangeResponse>(`credit/${params.userId}/credit-records`, {
     searchParams: {
       ...params,
     },
   })
 }
 
-/** 导出用户充值历史Excel GET /user/{userId}/recharge-records/export */
+/** 导出用户充值历史Excel GET /{userId}/recharge-records/export */
 export async function exportCreditHistory(
   params: {
     startTime?: string
@@ -139,7 +139,7 @@ export async function exportCreditHistory(
 ) {
 
 
-  const response = await request.get(`user/${params.userId}/recharge-records/export`, {
+  const response = await request.get(`report/${params.userId}/recharge-records/export`, {
     searchParams: {
       ...params,
     },
@@ -163,4 +163,31 @@ export async function exportCreditHistory(
 
   return { success: true }
 
+}
+
+
+export async function exportCreditRecords(params: {
+  startTime?: string
+  endTime?: string
+  userId?: string,
+}) {
+
+  const response = await request.get(`report/${params.userId}/credit-records/export`, {
+    searchParams: {
+      ...params,
+    },
+    raw: true
+  })
+  const blob = await response.blob()
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `积分历史_${params.userId}_${new Date().getTime()}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+
+  return { success: true }
 }

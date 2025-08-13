@@ -1,8 +1,8 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
-import { ProTable, type ProTableColumn, type UserData } from '@/components/protable'
+import { ProTable, type ProTableColumn } from '@/components/protable'
 import { Button } from '@/components/ui/button'
 
-import { getUserInfo, exportCreditHistory } from '@/api/user-manage'
+import { getUserInfo } from '@/api/user-manage'
 
 export const Route = createLazyFileRoute('/user-manage')({
   component: UserManage,
@@ -11,7 +11,7 @@ export const Route = createLazyFileRoute('/user-manage')({
 function UserManage() {
   const router = useRouter()
 
-  const columns: ProTableColumn<UserData>[] = [
+  const columns: ProTableColumn<any>[] = [
     {
       key: 'name',
       title: '姓名',
@@ -23,24 +23,24 @@ function UserManage() {
       dataIndex: 'email',
     },
     {
-      key: 'role',
-      title: '角色',
-      dataIndex: 'role',
+      key: 'registerTime',
+      title: '注册时间',
+      dataIndex: 'registerTime',
     },
     {
-      key: 'status',
-      title: '状态',
-      dataIndex: 'status',
+      key: 'credit',
+      title: '剩余积分',
+      dataIndex: 'credit',
     },
     {
-      key: 'createdAt',
-      title: '创建时间',
-      dataIndex: 'createdAt',
+      key: 'userType',
+      title: '订阅类型',
+      dataIndex: 'userType',
     },
     {
       key: 'actions',
       title: '操作',
-      render: (_, record: UserData) => (
+      render: (_, record: any) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -85,10 +85,14 @@ function UserManage() {
         <ProTable
           columns={columns}
           onSearch={getUserInfo}
+          queryKey={['user-manage']}
           searchItems={{
             input: [
-              { title: '名字', apiName: 'name' },
-              { title: '邮箱', apiName: 'email' },
+              { title: '名字/邮箱', apiName: 'keyword' },
+              { title: '名字/邮箱1', apiName: 'keyword1' },
+              { title: '名字/邮箱2', apiName: 'keyword2' },
+              { title: '名字/邮箱3', apiName: 'keyword3' },
+              { title: '名字/邮箱4', apiName: 'keyword4' },
             ],
             calendar: true,
           }}

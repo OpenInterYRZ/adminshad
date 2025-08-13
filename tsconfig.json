@@ -8,5 +8,6 @@
     },
     "noUnusedLocals": false,
     "noUnusedParameters": false
-  }
+  },
+  "include": ["src", "src/vite-env.d.ts"],
 }

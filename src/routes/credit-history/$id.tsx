@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { exportCreditHistory, getCreditChangeRecords } from '@/api/user-manage'
+import { exportCreditRecords, getCreditChangeRecords } from '@/api/user-manage'
 import { ProTable, type ProTableColumn } from '@/components/protable'
+import { useQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/credit-history/$id')({
   component: RouteComponent,
@@ -19,24 +20,20 @@ const columns: ProTableColumn<any>[] = [
     dataIndex: 'email',
   },
   {
-    key: 'role',
+    key: 'userType',
     title: '订阅类型',
-    dataIndex: 'role',
+    dataIndex: 'userType',
+  },
+
+  {
+    key: 'changeTime',
+    title: '变动时间',
+    dataIndex: 'changeTime',
   },
   {
-    key: 'status',
-    title: '消费类型',
-    dataIndex: 'status',
-  },
-  {
-    key: 'rechargeTime',
-    title: '消费时间',
-    dataIndex: 'rechargeTime',
-  },
-  {
-    key: 'credit',
+    key: 'changeAmount',
     title: '兑换积分',
-    dataIndex: 'credit',
+    dataIndex: 'changeAmount',
   },
 ]
 
@@ -45,27 +42,32 @@ function RouteComponent() {
 
   // 处理导出按钮点击
   const handleExport = async (searchParams: any) => {
-    await exportCreditHistory({
+    await exportCreditRecords({
       userId: id,
       startTime: searchParams?.startTime,
       endTime: searchParams?.endTime,
     })
   }
 
-  // const { data, isLoading } = useQuery({
-  //   queryKey: ['creditHistory', id],
-  //   queryFn: () => getCreditHistory(id, { page: 1, size: 10 }),
-  // })
+  const { data, isLoading } = useQuery({
+    queryKey: ['creditHistory', id],
+    queryFn: () => getCreditChangeRecords({ userId: id, page: 1, size: 10 }),
+  })
+  // @ts-ignore
+  const credit = data?.records[0]?.credit
   return (
     <div className="container mx-auto py-6">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">积分历史</h1>
+          <h1 className="text-3xl font-bold">
+            积分历史 -- 用户 {id} -- 积分剩余：{credit} 积分
+          </h1>
         </div>
 
         <ProTable
           columns={columns}
           onSearch={getCreditChangeRecords}
+          queryKey={['credit-history', id]}
           params={{ userId: id }}
           searchItems={{
             calendar: true,

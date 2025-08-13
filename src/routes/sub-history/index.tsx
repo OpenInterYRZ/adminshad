@@ -1,68 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { exportCreditHistory, getCreditHistory } from '@/api/user-manage'
-import { ProTable, type ProTableColumn } from '@/components/protable'
-import { useQuery } from '@tanstack/react-query'
-
 export const Route = createFileRoute('/sub-history/')({
   component: RouteComponent,
 })
 
-const columns: ProTableColumn<any>[] = [
-  {
-    key: 'name',
-    title: '姓名',
-    dataIndex: 'name',
-  },
-  {
-    key: 'email',
-    title: '邮箱',
-    dataIndex: 'email',
-  },
-  {
-    key: 'role',
-    title: '角色',
-    dataIndex: 'role',
-  },
-  {
-    key: 'status',
-    title: '状态',
-    dataIndex: 'status',
-  },
-  {
-    key: 'createdAt',
-    title: '创建时间',
-    dataIndex: 'createdAt',
-  },
-]
-
 function RouteComponent() {
-  const { id } = Route.useParams() as { id: string }
-  console.log(1)
-  console.log('id', id)
-  // const { data, isLoading } = useQuery({
-  //   queryKey: ['creditHistory', id],
-  //   queryFn: () => getCreditHistory(id, { page: 1, size: 10 }),
-  // })
   return (
     <div className="container mx-auto py-6">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">充值历史</h1>
         </div>
-
-        <ProTable
-          columns={columns}
-          onSearch={getCreditHistory}
-          searchItems={{
-            input: [
-              { title: '名字', apiName: 'name' },
-              { title: '邮箱', apiName: 'email' },
-            ],
-            calendar: true,
-          }}
-          buttons={[{ title: '导出', onClick: exportCreditHistory }]}
-        />
       </div>
     </div>
   )

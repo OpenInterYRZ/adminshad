@@ -1,7 +1,7 @@
 import ky, { type Input, type Options, type KyResponse } from 'ky'
 
 export interface Response<T = unknown> {
-  code: string
+  code: number
   data: T
   msg: string
 }
@@ -18,8 +18,10 @@ export const instance = ky.create({
   hooks: {
     beforeRequest: [
       async (request) => {
-        if (!request.headers.has('Authorization')) {
-          console.log('!request.headers.hasAuthorizatio')
+        // 自动添加认证 token
+        const token = localStorage.getItem('token')
+        if (token && !request.headers.has('Authorization')) {
+          request.headers.set('Authorization', `Bearer ${token}`)
         }
       },
     ],
@@ -49,19 +51,16 @@ function createRequestMethod(method: 'get' | 'post' | 'put' | 'delete') {
     const response = await instance[method](url, kyOptions)
 
     const data = (await response.json()) as Response<T>
-    if (data.code === '0000') return data.data
+    if (data.code === 0) return data.data
 
-    if (data.code === '9004') {
-      if (typeof window === 'undefined') {
-        // redirect('/login')
-      } else {
-        // signOut()
-      }
+    console.log("1")
+    // 认证失败，清除本地 token 并重定向到登录页
+    localStorage.removeItem('token')
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
     }
 
-    // if (data.code === '0402') useUserStore.setState({ credits: true })
 
-    throw new Error(data.msg || 'Unknown error')
   }
 }
 

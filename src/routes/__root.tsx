@@ -1,4 +1,5 @@
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
   Sidebar,
@@ -15,21 +16,48 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { ModeToggle } from '@/components/mode-toggle'
-import { Home, LogIn, Users } from 'lucide-react'
+import { Home, LogOut, Users } from 'lucide-react'
+import Logo from '@/assets/logo.svg'
 
-export const Route = createRootRoute({
-  component: () => (
+function RootComponent() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isLoginPage = location.pathname === '/login'
+
+  useEffect(() => {
+    // 检查认证状态
+    if (!isLoginPage) {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        navigate({ to: '/login', replace: true })
+        return
+      }
+    } else {
+      // 如果在登录页但已经有token，跳转到首页
+      const token = localStorage.getItem('token')
+      if (token) {
+        navigate({ to: '/', replace: true })
+        return
+      }
+    }
+  }, [location.pathname, isLoginPage, navigate])
+
+  if (isLoginPage) {
+    return (
+      <>
+        <Outlet />
+        <TanStackRouterDevtools />
+      </>
+    )
+  }
+
+  return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-2">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              <Home className="size-4" />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">管理系统</span>
-              <span className="truncate text-xs">Admin Dashboard</span>
-            </div>
+          <div className="flex items-center gap-2 px-5 py-2">
+            {/* @ts-ignore */}
+            <Logo className="h-12 w-auto text-primary" />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -46,14 +74,6 @@ export const Route = createRootRoute({
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link to="/login">
-                      <LogIn />
-                      <span>登录</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
                     <Link to="/user-manage">
                       <Users />
                       <span>用户管理</span>
@@ -65,6 +85,20 @@ export const Route = createRootRoute({
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => {
+                  localStorage.removeItem('token')
+                  navigate({ to: '/login' })
+                }}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+              >
+                <LogOut />
+                <span>退出登录</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
           <div className="p-2 text-xs text-sidebar-foreground/70">© 2025 管理系统</div>
         </SidebarFooter>
       </Sidebar>
@@ -79,5 +113,9 @@ export const Route = createRootRoute({
         <TanStackRouterDevtools />
       </SidebarInset>
     </SidebarProvider>
-  ),
+  )
+}
+
+export const Route = createRootRoute({
+  component: RootComponent,
 })
