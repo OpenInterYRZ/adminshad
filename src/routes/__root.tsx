@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { ModeToggle } from '@/components/mode-toggle'
-import { Home, LogOut, Users } from 'lucide-react'
+import { Home, Users } from 'lucide-react'
 import Logo from '@/assets/logo.svg'
 import { UserMenu } from '@/components/user-menu'
 
@@ -26,7 +26,6 @@ function RootComponent() {
   const isLoginPage = location.pathname === '/login'
 
   useEffect(() => {
-    // 检查认证状态
     if (!isLoginPage) {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -34,7 +33,6 @@ function RootComponent() {
         return
       }
     } else {
-      // 如果在登录页但已经有token，跳转到首页
       const token = localStorage.getItem('token')
       if (token) {
         navigate({ to: '/', replace: true })

@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { debounce } from 'lodash-es'
 
-export function useProTableSearch<T>(
+export function useProTableSearch(
   initialParams: Record<string, any> = {}
 ) {
   // 搜索参数状态（用于API请求）
@@ -10,14 +10,14 @@ export function useProTableSearch<T>(
     size: 25,
     ...initialParams
   })
-  
+
   // 输入框显示状态（立即更新）
   const [inputValues, setInputValues] = useState({
     ...initialParams
   })
 
   const updateParam = useCallback((
-    key: string, 
+    key: string,
     value: any
   ) => {
     setSearchParams(prev => ({
@@ -39,7 +39,7 @@ export function useProTableSearch<T>(
 
   // 立即更新输入框显示
   const updateInput = useCallback((
-    key: string, 
+    key: string,
     value: any
   ) => {
     setInputValues(prev => ({
@@ -63,8 +63,8 @@ export function useProTableSearch<T>(
   }, [])
 
   const changePageSize = useCallback((size: number) => {
-    setSearchParams(prev => ({ 
-      ...prev, 
+    setSearchParams(prev => ({
+      ...prev,
       size,
       page: 1
     }))
