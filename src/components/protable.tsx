@@ -8,6 +8,7 @@ import Calendar23 from './calendar-23'
 import { type DateRange } from 'react-day-picker'
 import { Pgeli } from './elipg'
 import { Loader2 } from 'lucide-react'
+import { useProTableSearch } from '@/hooks/useProTableSearch'
 
 export interface PaginationData<T> {
   current: string
@@ -18,15 +19,35 @@ export interface PaginationData<T> {
 }
 
 export interface ProTableColumn<T> {
-  key: keyof T | string
+  key: string // 唯一标识
   title: string
-  dataIndex?: keyof T
+  dataIndex: keyof T | string // 数据索引
   render?: (value: any, record: T, index: number) => React.ReactNode
-  width?: number
+  width?: number | string
+  align?: 'left' | 'center' | 'right'
+  ellipsis?: boolean
+  sortable?: boolean
+  filterable?: boolean
 }
 
-export interface FilterConfig {
-  name?: string
+// 搜索项
+export interface SearchInputItem {
+  title: string
+  field: string // 替代 apiName
+  placeholder?: string
+  type?: 'text' | 'number' | 'email'
+}
+
+export interface SearchSelectItem {
+  title: string
+  field: string
+  options: Array<{ label: string; value: string | number }>
+  placeholder?: string
+}
+export interface SearchDateRangeItem {
+  title?: string
+  startTime: string
+  endTime: string
 }
 
 export interface ProTableProps<T> {
@@ -57,15 +78,14 @@ export function ProTable<T extends Record<string, any>>({
   params = {},
   queryKey = ['pro-table'],
 }: ProTableProps<T>) {
-  const [searchValues, setSearchValues] = useState<Record<string, any>>({ page: 1, size: 25, ...params })
+  const { searchParams, inputValues, updateInput, updateParam, resetSearch, changePage, debouncedSearch } = useProTableSearch(params)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: [queryKey, searchValues],
-    queryFn: () => onSearch(searchValues),
+    queryKey: [queryKey, searchParams],
+    queryFn: () => onSearch(searchParams),
     enabled: !!onSearch,
   })
-  console.log('queryKey', searchValues)
   const formatDateToString = (date: Date): string => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -76,10 +96,8 @@ export function ProTable<T extends Record<string, any>>({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target
-    setSearchValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    updateInput(name, value)
+    debouncedSearch(name, value)
   }
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
@@ -87,18 +105,11 @@ export function ProTable<T extends Record<string, any>>({
     if (range?.from && range?.to) {
       const startTime = formatDateToString(range.from)
       const endTime = formatDateToString(range.to)
-
-      setSearchValues((prev) => ({
-        ...prev,
-        startTime,
-        endTime,
-      }))
+      updateParam('startTime', startTime)
+      updateParam('endTime', endTime)
     } else {
-      setSearchValues((prev) => ({
-        ...prev,
-        startTime: '',
-        endTime: '',
-      }))
+      updateParam('startTime', '')
+      updateParam('endTime', '')
     }
   }
 
@@ -132,20 +143,20 @@ export function ProTable<T extends Record<string, any>>({
   })
 
   const handleReset = async () => {
-    const resetValues = { page: 1, size: 25, ...params }
-    setSearchValues(resetValues)
+    resetSearch()
     setDateRange(undefined)
+    console.log('searchParams', searchParams)
+    refetch()
   }
 
   const handlePageChange = async (page: number) => {
-    const newSearchValues = { ...searchValues, page }
-    setSearchValues(newSearchValues)
+    changePage(page)
   }
 
   const handlePreviousPage = () => {
     const currentPage = Number(data?.current || 1)
     if (currentPage > 1) {
-      handlePageChange(currentPage - 1)
+      changePage(currentPage - 1)
     }
   }
 
@@ -153,7 +164,7 @@ export function ProTable<T extends Record<string, any>>({
     const currentPage = Number(data?.current || 1)
     const totalPages = Number(data?.pages || 1)
     if (currentPage < totalPages) {
-      handlePageChange(currentPage + 1)
+      changePage(currentPage + 1)
     }
   }
 
@@ -166,7 +177,7 @@ export function ProTable<T extends Record<string, any>>({
               <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
               <Input
                 name={item.apiName}
-                value={searchValues[item.apiName] || ''}
+                value={inputValues[item.apiName] || ''}
                 placeholder={`请输入${item.title}`}
                 className="h-10"
                 onChange={handleInputChange}
@@ -186,7 +197,7 @@ export function ProTable<T extends Record<string, any>>({
             className="min-w-[72px]"
             onClick={async () => {
               if (onSearch) {
-                refetch(searchValues)
+                refetch()
               }
             }}
           >
@@ -208,9 +219,7 @@ export function ProTable<T extends Record<string, any>>({
                 variant="default"
                 size="sm"
                 onClick={() => {
-                  console.log('searchValues', searchValues)
-                  const { page, size, ...rest } = searchValues
-                  console.log('rest', rest)
+                  const { page, size, ...rest } = searchParams
                   item.onClick({ ...rest })
                 }}
               >
