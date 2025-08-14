@@ -1,5 +1,4 @@
-import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { createRootRoute, Link, Outlet, useLocation, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
   Sidebar,
@@ -22,24 +21,7 @@ import { UserMenu } from '@/components/user-menu'
 
 function RootComponent() {
   const location = useLocation()
-  const navigate = useNavigate()
   const isLoginPage = location.pathname === '/login'
-
-  useEffect(() => {
-    if (!isLoginPage) {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        navigate({ to: '/login', replace: true })
-        return
-      }
-    } else {
-      const token = localStorage.getItem('token')
-      if (token) {
-        navigate({ to: '/', replace: true })
-        return
-      }
-    }
-  }, [location.pathname, isLoginPage, navigate])
 
   if (isLoginPage) {
     return (
@@ -107,5 +89,13 @@ function RootComponent() {
 }
 
 export const Route = createRootRoute({
+  beforeLoad: ({ location }) => {
+    const isLoginPage = location.pathname === '/login'
+    const token = localStorage.getItem('token')
+
+    if (!isLoginPage && !token) {
+      return redirect({ to: '/login', replace: true })
+    }
+  },
   component: RootComponent,
 })

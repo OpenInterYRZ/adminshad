@@ -91,9 +91,9 @@ function Login() {
                       <Label htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         密码
                       </Label>
-                      <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 ">
+                      {/* <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 ">
                         忘记密码？
-                      </a>
+                      </a> */}
                     </div>
                     <Input
                       id="password"
